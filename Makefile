@@ -27,7 +27,7 @@ config.h:
 slock: ${OBJ}
 	@echo CC -o $@
 	@${CC} -o $@ ${OBJ} ${LDFLAGS}
-	makepkg -f --clean
+	#makepkg -f --clean
 
 clean:
 	@echo cleaning
@@ -43,18 +43,18 @@ dist: clean
 	@gzip slock-${VERSION}.tar
 	@rm -rf slock-${VERSION}
 
-install: all
-	makepkg --install
 #install: all
-#@echo installing executable file to ${DESTDIR}${PREFIX}/bin
-#@mkdir -p ${DESTDIR}${PREFIX}/bin
-#@cp -f slock ${DESTDIR}${PREFIX}/bin
-#@chmod 755 ${DESTDIR}${PREFIX}/bin/slock
-#@chmod u+s ${DESTDIR}${PREFIX}/bin/slock
-#@echo installing manual page to ${DESTDIR}${MANPREFIX}/man1
-#@mkdir -p ${DESTDIR}${MANPREFIX}/man1
-#@sed "s/VERSION/${VERSION}/g" <slock.1 >${DESTDIR}${MANPREFIX}/man1/slock.1
-#@chmod 644 ${DESTDIR}${MANPREFIX}/man1/slock.1
+#makepkg --install
+install: all
+	@echo installing executable file to ${DESTDIR}${PREFIX}/bin
+	@mkdir -p ${DESTDIR}${PREFIX}/bin
+	@cp -f slock ${DESTDIR}${PREFIX}/bin
+	@chmod 755 ${DESTDIR}${PREFIX}/bin/slock
+	@chmod u+s ${DESTDIR}${PREFIX}/bin/slock
+	@echo installing manual page to ${DESTDIR}${MANPREFIX}/man1
+	@mkdir -p ${DESTDIR}${MANPREFIX}/man1
+	@sed "s/VERSION/${VERSION}/g" <slock.1 >${DESTDIR}${MANPREFIX}/man1/slock.1
+	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/slock.1
 
 uninstall:
 	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
