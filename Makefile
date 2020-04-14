@@ -27,10 +27,12 @@ config.h:
 slock: ${OBJ}
 	@echo CC -o $@
 	@${CC} -o $@ ${OBJ} ${LDFLAGS}
+	#makepkg -f --clean
 
 clean:
 	@echo cleaning
 	@rm -f slock ${OBJ} slock-${VERSION}.tar.gz
+	@rm -f config.h
 
 dist: clean
 	@echo creating dist tarball
@@ -41,6 +43,8 @@ dist: clean
 	@gzip slock-${VERSION}.tar
 	@rm -rf slock-${VERSION}
 
+#install: all
+#makepkg --install
 install: all
 	@echo installing executable file to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin

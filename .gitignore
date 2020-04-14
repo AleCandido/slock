@@ -53,3 +53,8 @@ dkms.conf
 
 # the executable
 slock
+
+# built by makepkg
+src/*
+*.tar.xz
+*.tar.gz
