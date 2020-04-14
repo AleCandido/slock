@@ -18,6 +18,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <Imlib2.h>
 
 #include "arg.h"
 #include "util.h"
@@ -35,6 +36,7 @@ struct lock {
 	int screen;
 	Window root, win;
 	Pixmap pmap;
+	Pixmap bgmap;
 	unsigned long colors[NUMCOLS];
 };
 
@@ -43,6 +45,8 @@ struct xrandr {
 	int evbase;
 	int errbase;
 };
+
+Imlib_Image image;
 
 #include "config.h"
 
@@ -135,6 +139,7 @@ readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
 	KeySym ksym;
 	XEvent ev;
 
+
 	len = 0;
 	running = 1;
 	failure = 0;
@@ -190,9 +195,12 @@ readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
 			color = len ? INPUT : ((failure || failonclear) ? FAILED : INIT);
 			if (running && oldc != color) {
 				for (screen = 0; screen < nscreens; screen++) {
-					XSetWindowBackground(dpy,
-					                     locks[screen]->win,
-					                     locks[screen]->colors[color]);
+					if(locks[screen]->bgmap)
+                        XSetWindowBackground(dpy,
+                                             locks[screen]->win,
+                                             locks[screen]->colors[color]);
+                    else
+						XSetWindowBackground(dpy, locks[screen]->win, locks[screen]->colors[0]);
 					XClearWindow(dpy, locks[screen]->win);
 				}
 				oldc = color;
@@ -235,6 +243,18 @@ lockscreen(Display *dpy, struct xrandr *rr, int screen)
 	lock->screen = screen;
 	lock->root = RootWindow(dpy, lock->screen);
 
+
+	if(image) {
+		lock->bgmap = XCreatePixmap(dpy, lock->root, DisplayWidth(dpy, lock->screen), DisplayHeight(dpy, lock->screen), DefaultDepth(dpy, lock->screen));
+		imlib_context_set_image(image);
+		imlib_context_set_display(dpy);
+		imlib_context_set_visual(DefaultVisual(dpy, lock->screen));
+		imlib_context_set_colormap(DefaultColormap(dpy, lock->screen));
+		imlib_context_set_drawable(lock->bgmap);
+		imlib_render_image_on_drawable(0, 0);
+		imlib_free_image();
+	}
+
 	for (i = 0; i < NUMCOLS; i++) {
 		XAllocNamedColor(dpy, DefaultColormap(dpy, lock->screen),
 		                 colorname[i], &color, &dummy);
@@ -251,6 +271,8 @@ lockscreen(Display *dpy, struct xrandr *rr, int screen)
 	                          CopyFromParent,
 	                          DefaultVisual(dpy, lock->screen),
 	                          CWOverrideRedirect | CWBackPixel, &wa);
+	if(lock->bgmap)
+		XSetWindowBackgroundPixmap(dpy, lock->win, lock->bgmap);
 	lock->pmap = XCreateBitmapFromData(dpy, lock->win, curs, 8, 8);
 	invisible = XCreatePixmapCursor(dpy, lock->pmap, lock->pmap,
 	                                &color, &color, 0, 0);
@@ -300,7 +322,7 @@ lockscreen(Display *dpy, struct xrandr *rr, int screen)
 static void
 usage(void)
 {
-	die("usage: slock [-v] [cmd [arg ...]]\n");
+	die("\nusage: slock [options]\noptions:\n\t-v\tPrint version and exit.\n\t-i\t<full path to image file to display>\n\t[cmd [arg ...]]\n");
 }
 
 int
@@ -319,6 +341,14 @@ main(int argc, char **argv) {
 	case 'v':
 		fprintf(stderr, "slock-"VERSION"\n");
 		return 0;
+    case 'i':
+    	if((argc == 3) && !strcmp("-i", argv[1])) {
+    		image = imlib_load_image(argv[2]);
+    		if(!image) {
+    			die("slock: unable to load image.\n");
+    		};
+        };
+        return 0;
 	default:
 		usage();
 	} ARGEND
