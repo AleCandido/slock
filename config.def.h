@@ -3,9 +3,9 @@ static const char *user  = "nobody";
 static const char *group = "nobody";
 
 static const char *colorname[NUMCOLS] = {
-	[INIT] =   "black",     /* after initialization */
-	[INPUT] =  "#005577",   /* during input */
-	[FAILED] = "#CC3333",   /* wrong password */
+	[INIT] =   "#2e3440",     /* after initialization */
+	[INPUT] =  "#5e81ac",   /* during input */
+	[FAILED] = "#81a1c1",   /* wrong password */
 };
 
 /* treat a cleared input like a wrong password (color) */
@@ -18,7 +18,7 @@ static const int monitortime = 5;
 static const char * message = "Suckless: Software that sucks less.";
 
 /* text color */
-static const char * text_color = "#ffffff";
+static const char * text_color = "#e5e9f0";
 
 /* text size (must be a valid size) */
 static const char * font_name = 
